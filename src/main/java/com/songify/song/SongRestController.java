@@ -45,6 +45,18 @@ public class SongRestController {
         return ResponseEntity.ok(new SingleSongResponseDto(songName));
     }
 
+//    @DeleteMapping("/songs/{id}")
+//    public ResponseEntity<String> deleteSongByIdUsingPathVariable(@PathVariable Integer id){
+//        database.remove(id);
+//        return ResponseEntity.ok("You deleted song with id: " + id);
+//    }
+
+    @DeleteMapping("/songs")
+    public ResponseEntity<String> deleteSongByIdUsingRequestParam(@RequestParam(required = false) Integer id){
+        database.remove(id);
+        return ResponseEntity.ok("You deleted song with id: " + id);
+    }
+
     //        @GetMapping("/songs")
 //    public ResponseEntity<SongResponseDto> getSongByIdWithParam(@RequestParam(required = false) Integer limit){
 //        if(limit != null){
