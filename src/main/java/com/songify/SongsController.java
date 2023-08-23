@@ -21,38 +21,11 @@ public class SongsController {
     ));
 
 
-//    @GetMapping("/songs")
-//    public ResponseEntity<SongResponseDto> getAllSongs(){
-//        database.put(1, "shawnmendes song1");
-//        database.put(2, "ariana grande song2");
-//        SongResponseDto response = new SongResponseDto(database);
-//        return ResponseEntity.ok(response);
-//    }
-
-
-        @GetMapping("/songs")
-    public ResponseEntity<SongResponseDto> getSongByIdWithParam(@RequestParam(required = false) Integer limit){
-        if(limit != null){
-            Map<Integer, String> limitedMap = database.entrySet()
-                    .stream()
-                    .limit(limit)
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-            SongResponseDto response = new SongResponseDto(limitedMap);
-            return ResponseEntity.ok(response);
-        }
+    @GetMapping("/songs")
+    public ResponseEntity<SongResponseDto> getAllSongs(){
         SongResponseDto response = new SongResponseDto(database);
         return ResponseEntity.ok(response);
     }
-
-//    @GetMapping("/songs/{id}")
-//    public ResponseEntity<SingleSongResponseDto> getSongById(@PathVariable Integer id){
-//        String song = database.get(id);
-//        if(song == null){
-//            return ResponseEntity.notFound().build();
-//        }
-//        SingleSongResponseDto response = new SingleSongResponseDto(song);
-//        return ResponseEntity.ok(response);
-//    }
 
     @GetMapping("/songs/{id}")
     public ResponseEntity<SingleSongResponseDto> getSongByIdWithHeader(@PathVariable Integer id, @RequestHeader(required = false) String requestId){
@@ -64,6 +37,38 @@ public class SongsController {
         SingleSongResponseDto response = new SingleSongResponseDto(song);
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/songs")
+    public ResponseEntity<SingleSongResponseDto> postSong(@RequestBody SongRequestDto request){
+        String songName = request.songName();
+        log.info("Adding new song: " + songName);
+        database.put(database.size() + 1, songName);
+        return ResponseEntity.ok(new SingleSongResponseDto(songName));
+    }
+
+    //        @GetMapping("/songs")
+//    public ResponseEntity<SongResponseDto> getSongByIdWithParam(@RequestParam(required = false) Integer limit){
+//        if(limit != null){
+//            Map<Integer, String> limitedMap = database.entrySet()
+//                    .stream()
+//                    .limit(limit)
+//                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+//            SongResponseDto response = new SongResponseDto(limitedMap);
+//            return ResponseEntity.ok(response);
+//        }
+//        SongResponseDto response = new SongResponseDto(database);
+//        return ResponseEntity.ok(response);
+//    }
+
+//    @GetMapping("/songs/{id}")
+//    public ResponseEntity<SingleSongResponseDto> getSongById(@PathVariable Integer id){
+//        String song = database.get(id);
+//        if(song == null){
+//            return ResponseEntity.notFound().build();
+//        }
+//        SingleSongResponseDto response = new SingleSongResponseDto(song);
+//        return ResponseEntity.ok(response);
+//    }
 
 
 
