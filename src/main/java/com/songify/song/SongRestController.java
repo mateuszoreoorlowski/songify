@@ -2,6 +2,7 @@ package com.songify.song;
 
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,17 +46,21 @@ public class SongRestController {
         return ResponseEntity.ok(new SingleSongResponseDto(songName));
     }
 
-//    @DeleteMapping("/songs/{id}")
-//    public ResponseEntity<String> deleteSongByIdUsingPathVariable(@PathVariable Integer id){
+    @DeleteMapping("/songs/{id}")
+    public ResponseEntity<DeleteSongResponseDto> deleteSongByIdUsingPathVariable(@PathVariable Integer id){
+        if(!database.containsKey(id)){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new DeleteSongResponseDto( "Song with id "+ id + " not found", HttpStatus.NOT_FOUND));
+        }
+        database.remove(id);
+        return ResponseEntity.ok(new DeleteSongResponseDto("You deleted song with id: " + id, HttpStatus.OK));
+    }
+
+//    @DeleteMapping("/songs")
+//    public ResponseEntity<String> deleteSongByIdUsingRequestParam(@RequestParam(required = false) Integer id){
 //        database.remove(id);
 //        return ResponseEntity.ok("You deleted song with id: " + id);
 //    }
-
-    @DeleteMapping("/songs")
-    public ResponseEntity<String> deleteSongByIdUsingRequestParam(@RequestParam(required = false) Integer id){
-        database.remove(id);
-        return ResponseEntity.ok("You deleted song with id: " + id);
-    }
 
     //        @GetMapping("/songs")
 //    public ResponseEntity<SongResponseDto> getSongByIdWithParam(@RequestParam(required = false) Integer limit){
