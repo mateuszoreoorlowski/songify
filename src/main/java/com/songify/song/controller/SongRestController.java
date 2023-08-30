@@ -1,9 +1,11 @@
 package com.songify.song.controller;
 
-import com.songify.song.dto.DeleteSongResponseDto;
-import com.songify.song.dto.SingleSongResponseDto;
-import com.songify.song.dto.SongRequestDto;
-import com.songify.song.dto.SongResponseDto;
+import com.songify.song.dto.request.SongRequestDto;
+import com.songify.song.dto.request.UpdateSongRequestDto;
+import com.songify.song.dto.response.DeleteSongResponseDto;
+import com.songify.song.dto.response.SingleSongResponseDto;
+import com.songify.song.dto.response.SongResponseDto;
+import com.songify.song.dto.response.UpdateSongResponseDto;
 import com.songify.song.error.SongNotFoundException;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
@@ -18,11 +20,11 @@ import java.util.Map;
 @Log4j2
 public class SongRestController {
 
-    Map<Integer, String> database = new HashMap<>(Map.of(
-            1, "shawnmendes song1",
-            2, "ariana grande song2",
-            3, "shawnmendes songfgsdf",
-            4, "ariana grande song648723yfnb2"
+    Map<Integer, Song> database = new HashMap<>(Map.of(
+            1, new Song("shawnmendes song1", "Shawn Mendes"),
+            2, new Song("ariana grande song2", "Ariana Grande"),
+            3, new Song("shawnmendes songfgsdf", "Shawn Mendes"),
+            4, new Song("ariana grande song648723yfnb", "Ariana Grande")
     ));
 
 
@@ -39,17 +41,17 @@ public class SongRestController {
             throw new SongNotFoundException("Song with id "+ id + " not found");
         }
 
-        String song = database.get(id);
+        Song song = database.get(id);
         SingleSongResponseDto response = new SingleSongResponseDto(song);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/songs")
     public ResponseEntity<SingleSongResponseDto> postSong(@RequestBody @Valid SongRequestDto request){
-        String songName = request.songName();
-        log.info("Adding new song: " + songName);
-        database.put(database.size() + 1, songName);
-        return ResponseEntity.ok(new SingleSongResponseDto(songName));
+        Song song = new Song(request.songName(), request.artist());
+        log.info("Adding new song: " + song);
+        database.put(database.size() + 1, song);
+        return ResponseEntity.ok(new SingleSongResponseDto(song));
     }
 
     @DeleteMapping("/songs/{id}")
@@ -61,6 +63,24 @@ public class SongRestController {
         return ResponseEntity.ok(new DeleteSongResponseDto("You deleted song with id: " + id, HttpStatus.OK));
     }
 
+    @PutMapping("/songs/{id}")
+    public ResponseEntity<UpdateSongResponseDto> update(@PathVariable Integer id,
+                                                        @RequestBody @Valid UpdateSongRequestDto request){
+        if(!database.containsKey(id)){
+            throw new SongNotFoundException("Song with id "+ id + " not found");
+        }
+
+        String newSongName = request.songName();
+        String newArtist = request.artist();
+        Song newSong = new Song(newSongName, newArtist);
+        Song oldSong = database.put(id, newSong);
+        log.info("Updated newSong with id: " + id +
+                " with oldSongName: " + oldSong.name() + " to newSongName: " + newSong.name() +
+                " oldArtist: " + oldSong.artist() + " to newArtist: " + newSong.artist());
+
+        return ResponseEntity.ok(new UpdateSongResponseDto(newSong.name(), newSong.artist()));
+    }
+
 //    @DeleteMapping("/songs")
 //    public ResponseEntity<String> deleteSongByIdUsingRequestParam(@RequestParam(required = false) Integer id){
 //        database.remove(id);
@@ -70,7 +90,7 @@ public class SongRestController {
     //        @GetMapping("/songs")
 //    public ResponseEntity<SongResponseDto> getSongByIdWithParam(@RequestParam(required = false) Integer limit){
 //        if(limit != null){
-//            Map<Integer, String> limitedMap = database.entrySet()
+//            Map<Integer, Song> limitedMap = database.entrySet()
 //                    .stream()
 //                    .limit(limit)
 //                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
