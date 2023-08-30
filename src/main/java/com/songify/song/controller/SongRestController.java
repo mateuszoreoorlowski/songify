@@ -1,11 +1,9 @@
 package com.songify.song.controller;
 
+import com.songify.song.dto.request.PartiallyUpdateSongRequestDto;
 import com.songify.song.dto.request.SongRequestDto;
 import com.songify.song.dto.request.UpdateSongRequestDto;
-import com.songify.song.dto.response.DeleteSongResponseDto;
-import com.songify.song.dto.response.SingleSongResponseDto;
-import com.songify.song.dto.response.SongResponseDto;
-import com.songify.song.dto.response.UpdateSongResponseDto;
+import com.songify.song.dto.response.*;
 import com.songify.song.error.SongNotFoundException;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
@@ -79,6 +77,35 @@ public class SongRestController {
                 " oldArtist: " + oldSong.artist() + " to newArtist: " + newSong.artist());
 
         return ResponseEntity.ok(new UpdateSongResponseDto(newSong.name(), newSong.artist()));
+    }
+
+    @PatchMapping("/songs/{id}")
+    public ResponseEntity<PartiallyUpdateSongResponseDto> partiallyUpdateSong(@PathVariable Integer id,
+                                                                              @RequestBody PartiallyUpdateSongRequestDto request){
+        if(!database.containsKey(id)){
+            throw new SongNotFoundException("Song with id "+ id + " not found");
+        }
+
+        Song songFromDatabase = database.get(id);
+        Song.SongBuilder builder = Song.builder();
+        if(request.songName() != null){
+            builder.name(request.songName());
+            log.info("Partially updated song name");
+        }else{
+            builder.name(songFromDatabase.name());
+        }
+
+        if(request.artist() != null){
+            builder.artist(request.artist());
+            log.info("Partially updated song artist");
+        } else{
+            builder.artist(songFromDatabase.artist());
+        }
+        Song updatedSong = builder.build();
+        database.put(id, updatedSong);
+
+        return ResponseEntity.ok(new PartiallyUpdateSongResponseDto(updatedSong));
+
     }
 
 //    @DeleteMapping("/songs")
